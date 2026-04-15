@@ -16,6 +16,11 @@ class Cliente extends Model
     public function cotizacione(){
         return $this->hasMany(Cotizacione::class, 'cliente_id');
     }
+    // Relación con el modelo Pedido
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class);  // Un cliente puede tener muchos pedidos
+    }
 
     protected $fillable = ['persona_id'];
 }
