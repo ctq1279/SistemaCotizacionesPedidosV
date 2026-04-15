@@ -12,11 +12,14 @@ class Cotizacione extends Model
     protected $fillable = [
         'cliente_id',
         'impuestos',
-        'costo_mano_obra', 
-        //'estado', 
+        'costo_mano_obra',
         //'user_id',
         'fecha_hora',
-        'total'
+        'total',
+        'costo_materiales',
+        'cantidad',
+        'tiempo_entrega',
+        'lugar_entrega',
     ];
 
     public function cliente(){
@@ -28,7 +31,7 @@ class Cotizacione extends Model
     }
 
     public function productos(){
-        return $this->belongsToMany(Producto::class, 'cotizacion_producto_tabla')->withPivot('cantidad','costo_materiales','precio_cotizacion','descuento_porcentaje','descuento_monto');
+        return $this->belongsToMany(Producto::class, 'cotizacion_producto_tabla')->withPivot('cantidad','costo_materiales','precio_cotizacion','descuento_porcentaje','descuento_monto','costo_produccion','costo_margen');
     }
 
     public function pedido(){
