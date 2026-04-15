@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,9 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
-        $this->call(ComprobanteSeeder::class);
+      
         $this->call(UserSeeder::class);
-        $this->call(TipoEnvioSeeder::class);
+        //$this->call(permissionSeeder::class);
+
     }
 }
