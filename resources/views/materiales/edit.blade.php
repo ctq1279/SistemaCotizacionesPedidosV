@@ -36,7 +36,12 @@
                     <small class="text-danger">{{'*'.$message}}</small>
                     @enderror
                 </div>
-
+                <!-----Cantidad---->
+                <div class="col-sm-4 mb-2">
+                    <label for="cantidad" class="form-label">Cantidad:</label>
+                    <input type="number" name="cantidad" id="cantidad" class="form-control">
+                </div>
+                
                 <div class="col-md-12">
                     <label for="unidad_medida" class="form-label">Unidad de medida:</label>
                     <textarea name="unidad_medida" id="unidad_medida" rows="3" class="form-control">{{old('unidad_medida', $materiale->unidad_medida)}}</textarea>
