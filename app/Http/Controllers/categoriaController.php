@@ -18,12 +18,22 @@ class categoriaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    function __construct()
+    {
+        $this->middleware('permission:ver-categoria|crear-categoria|editar-categoria|eliminar-categoria', ['only' => ['index']]);
+        $this->middleware('permission:crear-categoria', ['only' => ['create', 'store']]);
+        $this->middleware('permission:editar-categoria', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:eliminar-categoria', ['only' => ['destroy']]);
+    }
+
+    
     public function index()
     {
         $categorias = Categoria::latest()->get();
         //return view('categorias.index', compact('categorias'));
         //dd($categorias);
-        return view('categoria.index',['categorias' => $categorias]);
+        return view('categoria.index', ['categorias' => $categorias]);
     }
 
     /**
@@ -33,7 +43,7 @@ class categoriaController extends Controller
      */
     public function create()
     {
-        
+
         return view('categoria.create');
     }
 
@@ -45,17 +55,9 @@ class categoriaController extends Controller
      */
     public function store(StoreCategoriaRequest $request)
     {
-        //dd($request);
-        try{
-            DB::beginTransaction();
-            $categoria = Categoria::create($request->validated());
+        $categoria = Categoria::create($request->validated());
 
-            DB::commit();
-        }catch(Exception  $e){
-            DB::rollBack();
-        }
-
-        return redirect()->route('categorias.index')->with('success','Categoria registrada');
+        return redirect()->route('categorias.index')->with('success', 'Categoria registrada');
     }
 
     /**
@@ -78,8 +80,8 @@ class categoriaController extends Controller
     public function edit(Categoria $categoria)
     {
         //dd($categoria);
-       
-        return view('categoria.edit',['categoria'=>$categoria]);
+
+        return view('categoria.edit', ['categoria' => $categoria]);
     }
 
     /**
@@ -92,7 +94,7 @@ class categoriaController extends Controller
     public function update(UpdateCategoriaRequest $request, Categoria $categoria)
     {
         $categoria->update($request->validated());
-        return redirect()->route('categorias.index')->with('success','Categoria editada');
+        return redirect()->route('categorias.index')->with('success', 'Categoria editada');
     }
 
     /**
@@ -103,8 +105,8 @@ class categoriaController extends Controller
      */
     public function destroy($id)
     {
-        $categoria= Categoria::find($id);
+        $categoria = Categoria::find($id);
         $categoria->delete();
-        return redirect()->route('categorias.index')->with('success','Categoria elimindada');
+        return redirect()->route('categorias.index')->with('success', 'Categoria elimindada');
     }
 }
