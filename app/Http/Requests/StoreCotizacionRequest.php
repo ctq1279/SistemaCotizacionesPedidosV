@@ -31,10 +31,13 @@ class StoreCotizacionRequest extends FormRequest
             'fecha_hora' => 'required|date',
             //'estado' => 'required|string|max:50',
             'total' => 'required|numeric|min:0',
+            'tiempo_entrega' => 'nullable|string|max:255',
+            'lugar_entrega'=> 'nullable|string|max:255',
 
-            'costo_mano_obra' => 'nullable|numeric|min:0',
+            //'costo_mano_obra' => 'nullable|numeric|min:0',
+            //'costo_materiales' => 'nullable|numeric|min:0',
             // Validación de arrays para la tabla `cotizaciones_productos`
-           
+            //'cantidad' => 'required|integer|min:0',
         ];
     }
 }
