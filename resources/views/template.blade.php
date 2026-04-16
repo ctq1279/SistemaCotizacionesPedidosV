@@ -13,35 +13,62 @@
     <link href="{{ asset('css/template.css') }}" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     @stack('css')
+
+    <!-- Hotjar Tracking Code for Sitio 5221892 (falta el nombre) -->
+    <script>
+        (function(h, o, t, j, a, r) {
+            h.hj = h.hj || function() {
+                (h.hj.q = h.hj.q || []).push(arguments)
+            };
+            h._hjSettings = {
+                hjid: 5221892,
+                hjsv: 6
+            };
+            a = o.getElementsByTagName('head')[0];
+            r = o.createElement('script');
+            r.async = 1;
+            r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+    </script>
+
+
+
+
+
+
+
 </head>
 @auth
-<body class="sb-nav-fixed">
 
-    <x-navigation-header />
+    <body class="sb-nav-fixed">
 
-    <div id="layoutSidenav">
+        <x-navigation-header />
 
-        <x-navigation-menu />
+        <div id="layoutSidenav">
 
-        <div id="layoutSidenav_content">
-            <main>
-                @yield('content')
+            <x-navigation-menu />
 
-            </main>
+            <div id="layoutSidenav_content">
+                <main>
+                    @yield('content')
 
-            <x-footer />
+                </main>
 
+                <x-footer />
+
+            </div>
         </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
-    <script src="{{ asset('js/scripts.js') }}"></script>
-    @stack('js')
-</body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+        <script src="{{ asset('js/scripts.js') }}"></script>
+        @stack('js')
+    </body>
 @endauth
 
 @guest
     @include('pages.401')
 @endguest
+
 </html>
