@@ -11,6 +11,14 @@ class compraController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /*function __construct()
+    {
+        $this->middleware('permission:ver-compra|crear-compra|mostrar-compra|eliminar-compra', ['only' => ['index']]);
+        $this->middleware('permission:crear-compra', ['only' => ['create', 'store']]);
+        $this->middleware('permission:mostrar-compra', ['only' => ['show']]);
+        $this->middleware('permission:eliminar-compra', ['only' => ['destroy']]);
+    }*/
+    
     public function index()
     {
         return view('compra.index');
