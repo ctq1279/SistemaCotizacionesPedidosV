@@ -38,26 +38,27 @@
                                     @foreach ($productos as $item)
                                         <option value="{{ $item->id }}"
                                             data-precio-unitario="{{ $item->precio_unitario }}"
-                                            data-costo-mano-obra="{{ $item->costo_mano_obra }}">
+                                            data-costo-mano-obra="{{ $item->costo_mano_obra }}"
+                                            data-costo-total-materiales="{{ $item->costo_total_materiales }}">
                                             {{ $item->codigo . ' ' . $item->nombre }}
                                         </option>
                                     @endforeach
 
                                 </select>
                             </div>
-
-                            <!-----Precio base---->
-                            <div class="col-sm-4 mb-2">
-                                <label for="precio_unitario" class="form-label">Precio base:</label>
-                                <input type="number" name="precio_unitario" id="precio_unitario" class="form-control"
-                                    step="0.1" readonly>
-                            </div>
-
                             <!-----Cantidad---->
                             <div class="col-sm-4 mb-2">
                                 <label for="cantidad" class="form-label">Cantidad:</label>
                                 <input type="number" name="cantidad" id="cantidad" class="form-control">
                             </div>
+                            <!-----Precio base---->
+                            <div class="col-sm-4 mb-2">
+                                <label for="precio_unitario" class="form-label">Precio de venta:</label>
+                                <input type="number" name="precio_unitario" id="precio_unitario" class="form-control"
+                                    step="0.1" readonly>
+                            </div>
+
+
 
                             <!-- Costo de mano de obra -->
                             <div class="col-sm-4 mb-2">
@@ -67,36 +68,36 @@
                             </div>
                             <!-----Costo de materiales---->
                             <div class="col-sm-4 mb-2">
-                                <label for="costo_materiales" class="form-label">Costo de Materiales:</label>
-                                <input type="number" name="costo_materiales" id="costo_materiales" class="form-control"
-                                    step="0.1">
-                            </div>
-                            <!-- Tiempo de entrega -->
-                            <div class="col-sm-4 mb-2">
-                                <label for="tiempo_entrega" class="form-label">Tiempo de entrega (días):</label>
-                                <input type="number" name="tiempo_entrega" id="tiempo_entrega" class="form-control">
+                                <label for="costo_total_materiales" class="form-label">Costo de Materiales:</label>
+                                <input type="number" name="costo_total_materiales" id="costo_total_materiales"
+                                    class="form-control" step="0.1" readonly>
                             </div>
 
-                            <!-- Costo de urgencia -->
-                            <div class="col-sm-4 mb-2">
-                                <label for="costo_urgencia" class="form-label">Costo de urgencia:</label>
-                                <input type="number" name="costo_urgencia" id="costo_urgencia" class="form-control"
-                                    step="0.1" readonly>
+                            <div class="form-group">
+                                <label for="tiempo_entrega">Tiempo de Entrega</label>
+                                <input type="text" name="tiempo_entrega" id="tiempo_entrega" class="form-control" value="{{ old('tiempo_entrega') }}">
                             </div>
-                            <!--Estado de cotización-->
-                            <div class="col-md-6 mb-2">
-                                <label for="estado">Estado</label>
-                                <select name="estado" id="estado" class="form-control" required>
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="aprobada">Aprobada</option>
-                                    <option value="rechazada">Rechazada</option>
-                                    <option value="vencida">Vencida</option>
-                                </select>
+                            
+                            <div class="form-group">
+                                <label for="lugar_entrega">Lugar de Entrega</label>
+                                <input type="text" name="lugar_entrega" id="lugar_entrega" class="form-control" value="{{ old('lugar_entrega') }}">
                             </div>
+                            
+
                             <!-----botón para agregar--->
                             <div class="col-12 mb-4 mt-2 text-end">
                                 <button id="btn_agregar" class="btn btn-primary" type="button">Agregar</button>
                             </div>
+                            @if ($errors->any())
+
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
 
                             <!-----Tabla para el detalle de la cotización--->
                             <div class="col-12">
@@ -105,13 +106,16 @@
                                         <thead class="bg-primary">
                                             <tr>
                                                 <th class="text-white">#</th>
-                                                <th class="text-white">Prenda</th>
-                                                <th class="text-white">Precio base</th>
+                                                <th class="text-white">Producto</th>
                                                 <th class="text-white">Cantidad</th>
+                                                <th class="text-white">Precio de venta</th>
+
                                                 <th class="text-white">Costo Mano de Obra</th>
                                                 <th class="text-white">Costo de Materiales</th>
-                                                <th class="text-white">Costo de Urgencia</th>
-                                                <th class="text-white">Subtotal</th>
+
+                                                <th class="text-white">Margen de ganancia</th>
+                                                <th class="text-white">Total costo</th>
+
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -131,20 +135,10 @@
                                         <tfoot>
                                             <tr>
                                                 <th></th>
-                                                <th colspan="4">Sumas</th>
-                                                <th colspan="2"><span id="sumas">0</span></th>
-                                            </tr>
-                                            <tr>
-                                                <th></th>
-                                                <th colspan="4">Impuesto %</th>
-                                                <th colspan="2"><input type="number" id="impuestos_input" value="18"
-                                                        step="0.1"> <span id="impuestos_display">0</span></th>
-                                            </tr>
-                                            <tr>
                                                 <th></th>
                                                 <th colspan="4">Total</th>
-                                                <th colspan="2"><input type="hidden" name="total" value="0"
-                                                        id="inputTotal"> <span id="total">0</span></th>
+                                                <th colspan="2"><input type="text" id="total" name="total"
+                                                        readonly value="0"></th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -171,7 +165,6 @@
                     <div class="p-3 border border-3 border-success">
                         <div class="row">
                             <!--Cliente-->
-                            <!--Cliente-->
                             <div class="col-12 mb-2">
                                 <label for="cliente_id" class="form-label">Cliente:</label>
                                 <select name="cliente_id" id="cliente_id" class="form-control selectpicker show-tick"
@@ -186,15 +179,7 @@
                             </div>
 
 
-                            <!--Impuesto---->
-                            <div class="col-sm-6 mb-2">
-                                <label for="impuestos" class="form-label">Impuesto(IGV):</label>
-                                <input readonly type="text" name="impuestos" id="impuestos"
-                                    class="form-control border-success">
-                                @error('impuestos')
-                                    <small class="text-danger">{{ '*' . $message }}</small>
-                                @enderror
-                            </div>
+
                             <!--Fecha--->
                             <div class="col-sm-6 mb-2">
                                 <label for="fecha_hora" class="form-label">Fecha:</label>
@@ -245,223 +230,153 @@
 @endsection
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#producto_id').change(function() {
-                actualizarDatosProducto();
-            });
-    
-            $('#tiempo_entrega').change(function() {
-                actualizarCostoUrgencia();
-            });
-
-            $('#btn_agregar').click(function() {
-                agregarProducto();
-            });
-
-            $('#btnCancelarCotizacion').click(function() {
-                cancelarCotizacion();
-            });
-
-            disableButtons();
-
-            $('#impuestos').val(impuestos + '%');
+            inicializarEventos();
         });
 
-        // Variables
-        let cont = 0;
-        let subtotal = [];
-        let sumas = 0;
-        let igv = 0;
-        let total = 0;
+        let contadorFilas = 0;
+        let totalGeneral = 0;
 
-        // Constantes
-        const impuestos = 18;
-
-
-        function cancelarCotizacion() {
-            // Eliminar el tbody de la tabla
-            $('#tabla_detalle tbody').empty();
-
-            //Añadir una nueva fila a la tabla
-            let fila = '<tr>' +
-                '<th></th>' +
-                '<td></td>' +
-                '<td></td>' +
-                '<td></td>' +
-                '<td></td>' +
-                '<td></td>' +
-                '<td></td>' +
-                '<td></td>' +
-                '</tr>';
-            $('#tabla_detalle').append(fila);
-            // Reiniciar valores de las variables
-            cont = 0;
-            subtotal = [];
-            sumas = 0;
-            igv = 0;
-            total = 0;
-
-            // Mostrar los campos calculados
-            $('#sumas').html(sumas);
-            $('#igv').html(igv);
-            $('#total').html(total);
-            $('#impuestos').val(impuestos + '%');
-            $('#inputTotal').val(total);
-
-            limpiarCampos();
-            disableButtons();
+        function inicializarEventos() {
+            $('#producto_id').change(cargarDatosProductoSeleccionado);
+            $('#btn_agregar').click(agregarProductoATabla);
+            $('#btnCancelarCotizacion').click(cancelarCotizacion);
+            actualizarBotonesAccion();
         }
 
-        function disableButtons() {
-            if (total == 0) {
-                $('#guardar').hide();
-                $('#cancelar').hide();
-            } else {
+        function cargarDatosProductoSeleccionado() {
+            const productoSeleccionado = $('#producto_id option:selected');
+            console.log('Producto seleccionado:', productoSeleccionado.text());
+            console.log('Costo mano de obra:', productoSeleccionado.data('costo-mano-obra'));
+
+            $('#precio_unitario').val(productoSeleccionado.data('precio-unitario'));
+            $('#costo_mano_obra').val(productoSeleccionado.data('costo-mano-obra'));
+            $('#costo_total_materiales').val(productoSeleccionado.data('costo-total-materiales'));
+        }
+
+        function agregarProductoATabla() {
+            const productoId = $('#producto_id').val();
+            const productoNombre = $('#producto_id option:selected').text().trim();
+            const cantidad = parseInt($('#cantidad').val(), 10);
+            const precio = parseFloat($('#precio_unitario').val());
+            //const costoMateriales = parseFloat($('#costo_materiales').val());
+            const costoManoObra = parseFloat($('#costo_mano_obra').val());
+            const costoTotalMateriales = parseFloat($('#costo_total_materiales').val());
+            //console.log(productoNombre);
+
+            if (validarDatosProducto(productoNombre, cantidad, precio, costoTotalMateriales, costoManoObra)) {
+                const subtotal = parseFloat(calcularSubtotal(cantidad, precio));
+                const margenGanancia = calcularMargen(precio, costoTotalMateriales + costoManoObra);
+
+                totalGeneral += subtotal;
+                agregarFilaATabla(productoId, productoNombre, cantidad, precio, costoTotalMateriales, costoManoObra, margenGanancia,
+                    subtotal);
+                actualizarTotales();
+
+                limpiarCamposFormulario();
+                actualizarBotonesAccion();
+            }
+        }
+
+        function agregarFilaATabla(productoId, productoNombre, cantidad, precio, costoTotalMateriales, costoManoObra, margen, subtotal) {
+
+
+
+            let fila = '<tr id="fila' + contadorFilas + '">' +
+                '<th>' + (contadorFilas + 1) + '</th>' +
+                '<td><input type="hidden" name="arrayidproducto[]" value="' + productoId + '">' + productoNombre + '</td>' +
+                '<td><input type="hidden" name="arraycantidad[]" value="' + cantidad + '">' + cantidad + '</td>' +
+                '<td><input type="hidden" name="arrayprecio[]" value="' + precio + '">' + precio +
+                '</td>' +
+                '<td><input type="hidden" name="arraycostomanoobra[]" value="' + costoManoObra + '">' + costoManoObra +
+                '</td>' +
+                '<td><input type="hidden" name="arraycostototalmateriales[]" value="' + costoTotalMateriales + '">' +
+                costoTotalMateriales + '</td>' +
+                '<td><input type="hidden" name="arraymargen[]" value="' + margen + '">' +
+                margen + '</td>' +
+                '<td>' + subtotal[contadorFilas] + '</td>' +
+                '<td><button class="btn btn-danger" type="button" onClick="eliminarProducto(' + contadorFilas +
+                ')"><i class="fa-solid fa-trash"></i></button></td>' +
+                '</tr>';
+
+
+
+            $('#tabla_detalle').append(fila);
+            contadorFilas++;
+        }
+
+        function eliminarProducto(indice, subtotal) {
+            totalGeneral -= parseFloat(subtotal);
+            $('#fila' + indice).remove();
+            actualizarTotales();
+            actualizarBotonesAccion();
+        }
+
+        //aqui falta validar el boton cancelar cotizacion ya que no eloimia las filas de cotizaciones y tampoco el total 
+        function cancelarCotizacion() {
+            $('#tabla_detalle tbody').empty();
+            totalGeneral = 0;
+            contadorFilas = 0;
+            actualizarTotales();
+            limpiarCamposFormulario();
+            actualizarBotonesAccion();
+        }
+
+        function actualizarTotales() {
+            totalGeneral = isNaN(totalGeneral) ? 0 : parseFloat(totalGeneral); // Forzar número si hay error
+            $('#sumas').html(totalGeneral.toFixed(2));
+            $('#total').val(totalGeneral.toFixed(2));
+        }
+
+        function actualizarBotonesAccion() {
+            if (totalGeneral > 0) {
                 $('#guardar').show();
                 $('#cancelar').show();
-            }
-        }
-
-        function actualizarDatosProducto() {
-            let producto = $('#producto_id option:selected');
-            let precio = producto.data('precio-unitario');
-            let costoManoObra = producto.data('costo-mano-obra');
-    
-            $('#precio_unitario').val(precio);
-            $('#costo_mano_obra').val(costoManoObra);
-        }
-    
-        function actualizarCostoUrgencia() {
-            let tiempoEntrega = $('#tiempo_entrega').val();
-            let costoUrgencia = 0;
-    
-            if (tiempoEntrega <= 3 && tiempoEntrega > 0) {
-                costoUrgencia = 50;
-            } else if (tiempoEntrega > 3 && tiempoEntrega <= 7) {
-                costoUrgencia = 30;
-            }
-    
-            $('#costo_urgencia').val(costoUrgencia);
-        }
-    
-        function agregarProducto() {
-            // Obtener valores de los campos
-            const productoId = $('#producto_id').val();
-            let nombreProducto = ($('#producto_id option:selected').text()).split('')[1];
-            let cantidad = $('#cantidad').val();
-            let precio = $('#precio_unitario').val();
-            let costoMateriales = $('#costo_materiales').val();
-            let costoManoObra = $('#costo_mano_obra').val();
-            let tiempoEntrega = $('#tiempo_entrega').val();
-            let costoUrgencia = $('#costo_urgencia').val();
-            // Validaciones 
-            // 1. Para que los campos no estén vacíos
-            if (nombreProducto != '' && nombreProducto != undefined && cantidad != '' && costoMateriales != '' && costoManoObra != '') {
-                // 2. Para que los valores ingresados sean los correctos
-                if (parseInt(cantidad) > 0 && (cantidad % 1 == 0) && parseFloat(costoMateriales) >= 0 && parseFloat(costoManoObra) >= 0) {
-                    // Calcular valores
-                    let subtotalProducto = round((cantidad * precio) + (cantidad * costoManoObra) + (cantidad * costoMateriales) + parseFloat(costoUrgencia));
-                    subtotal[cont] = subtotalProducto;
-                    sumas += subtotal[cont];
-                    igv = round(sumas / 100 * impuestos);
-                    total = round(sumas + igv);
-
-                    // Crear la fila
-                    let fila = '<tr id="fila' + cont + '">' +
-                        '<th>' + (cont + 1) + '</th>' +
-                        '<td><input type="hidden" name="arrayidproducto[]" value="' + productoId + '">' +
-                        nombreProducto + '</td>' +
-                        '<td><input type="hidden" name="arraycantidad[]" value="' + cantidad + '">' + cantidad + '</td>' +
-                        '<td>' + precio + '</td>' +
-                        '<td><input type="hidden" name="arraycostomanoobra[]" value="' + costoManoObra + '">' +
-                        costoManoObra + '</td>' +
-                        '<td><input type="hidden" name="arraycostomateriales[]" value="' + costoMateriales + '">' +
-                        costoMateriales + '</td>' +
-                        '<td>' + costoUrgencia + '</td>' +
-                        '<td>' + subtotalProducto + '</td>' +
-                        '<td><button class="btn btn-danger" type="button" onClick="eliminarProducto(' + cont +
-                        ')"><i class="fa-solid fa-trash"></i></button></td>' +
-                        '</tr>';
-
-                    // Acciones después de añadir la fila
-                    $('#tabla_detalle').append(fila);
-                    limpiarCampos();
-                    cont++;
-                    disableButtons();
-
-                    // Mostrar los campos calculados
-                    $('#sumas').html(sumas);
-                    $('#igv').html(igv);
-                    $('#total').html(total);
-                    $('#impuestos').val(igv);
-                    $('#inputTotal').val(total);
-                } else {
-                    showModal('Valores incorrectos');
-                }
             } else {
-                showModal('Le faltan campos por llenar');
+                $('#guardar').hide();
+                $('#cancelar').hide();
             }
         }
 
-        function eliminarProducto(indice) {
-            // Calcular valores
-            sumas -= round(subtotal[indice]);
-            igv = round(sumas / 100 * impuestos);
-            total = round(sumas + igv);
-
-            // Mostrar los campos calculados
-            $('#sumas').html(sumas);
-            $('#igv').html(igv);
-            $('#total').html(total);
-            $('#impuestos').val(igv);
-            $('#inputTotal').val(total);
-
-            // Eliminar la fila de la tabla
-            $('#fila' + indice).remove();
-            disableButtons();
-        }
-
-        function limpiarCampos() {
-            let select = $('#producto_id');
+        function limpiarCamposFormulario() {
             $('#producto_id').val('');
             $('#cantidad').val('');
             $('#precio_unitario').val('');
-            $('#costo_materiales').val('');
+            $('#costo_total_materiales').val('');
             $('#costo_mano_obra').val('');
-            $('#tiempo_entrega').val('');
-            $('#costo_urgencia').val('');
         }
 
-        function round(num, decimales = 2) {
-            var signo = (num >= 0 ? 1 : -1);
-            num = num * signo;
-            if (decimales === 0) // con 0 decimales
-                return signo * Math.round(num);
-            num = num.toString().split('e');
-            num = Math.round(+(num[0] + 'e' + (num[1] ? (+num[1] + decimales) : decimales)));
-            num = num.toString().split('e');
-            return signo * (num[0] + 'e' + (num[1] ? (+num[1] - decimales) : -decimales));
+        function validarDatosProducto(nombre, cantidad, precio, costoTotalMateriales, costoManoObra) {
+            if (!nombre || cantidad <= 0 || isNaN(precio) || isNaN(costoTotalMateriales) || isNaN(costoManoObra)) {
+                mostrarAlerta('Datos inválidos. Por favor, verifica los campos.', 'error');
+                return false;
+            }
+            return true;
         }
 
-        function showModal(message, icon = 'error') {
-            const Toast = Swal.mixin({
+        function calcularSubtotal(cantidad, precio) {
+            return (cantidad * precio).toFixed(2);
+        }
+
+        function calcularMargen(precio, costoTotal) {
+            return (precio - costoTotal).toFixed(2);
+        }
+
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            Swal.fire({
+                title: mensaje,
+                icon: tipo,
                 toast: true,
                 position: 'top-end',
-                showConfirmButton: false,
                 timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.addEventListener('mouseenter', Swal.stopTimer)
-                    toast.addEventListener('mouseleave', Swal.resumeTimer)
-                }
-            })
+                showConfirmButton: false,
+            });
+        }
 
-            Toast.fire({
-                icon: icon,
-                title: message
-            })
+        function esFormularioVacio() {
+            return totalGeneral === 0;
         }
     </script>
 @endpush

@@ -18,99 +18,76 @@
         </ol>
 
         <!-- Formulario de edición de cotización -->
-        <form action="{{ route('cotizaciones.update', ['cotizacione' => $cotizacione]) }}" method="POST">
+        <form action="{{ route('cotizaciones.update', $cotizacione->id) }}" method="POST">
             @csrf
-            @method('PATCH')
+            @method('PUT')
 
-            <!-- Cliente -->
-            <div class="form-group mb-4">
-                <label for="cliente_id" class="form-label">Cliente:</label>
-                <select name="cliente_id" id="cliente_id" class="form-control selectpicker show-tick"
-                    data-live-search="true" title="Selecciona" data-size="2">
-                    @foreach ($clientes as $item)
-                        <option value="{{ $item->id }}"
-                            {{ old('cliente_id', $cotizacione->cliente_id) == $item->id ? 'selected' : '' }}>
-                            {{ $item->persona->razon_social }}
+            <div class="form-group">
+                <label for="cliente">Cliente</label>
+                <select name="cliente_id" id="cliente" class="form-control" required>
+                    <option value="" disabled>Seleccione un cliente</option>
+                    @foreach ($clientes as $cliente)
+                        <option value="{{ $cliente->id }}"
+                            {{ $cotizacione->cliente_id == $cliente->id ? 'selected' : '' }}>
+                            {{ $cliente->nombre }}
                         </option>
                     @endforeach
                 </select>
-                @error('cliente_id')
-                    <small class="text-danger">{{ '*' . $message }}</small>
-                @enderror
             </div>
 
-            <!-- Productos -->
-            <h4 class="mb-3">Productos de la Cotización</h4>
-            @foreach ($cotizacione->productos as $producto)
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="cantidad_{{ $producto->id }}">Cantidad ({{ $producto->nombre }})</label>
-                        <input type="number" class="form-control" name="cantidad[{{ $producto->id }}]"
-                            id="cantidad_{{ $producto->id }}"
-                            value="{{ old('cantidad.' . $producto->id, $producto->pivot->cantidad) }}" min="1"
-                            required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="costo_materiales_{{ $producto->id }}">Costo Materiales
-                            ({{ $producto->nombre }})</label>
-                        <input type="number" class="form-control" name="costo_materiales[{{ $producto->id }}]"
-                            id="costo_materiales_{{ $producto->id }}"
-                            value="{{ old('costo_materiales.' . $producto->id, $producto->pivot->costo_materiales) }}"
-                            step="0.01" min="0" required>
-                    </div>
-                </div>
-            @endforeach
-
-            <!-- Tiempo de Entrega -->
-            <div class="form-group mb-4">
-                <label for="tiempo_entrega">Tiempo de Entrega:</label>
-                <input type="text" class="form-control" name="tiempo_entrega" id="tiempo_entrega"
-                    value="{{ old('tiempo_entrega', $cotizacione->tiempo_entrega) }}"
-                    placeholder="Ingrese el tiempo estimado de entrega">
-                @error('tiempo_entrega')
-                    <small class="text-danger">{{ '*' . $message }}</small>
-                @enderror
-            </div>
-
-            <!-- Estado -->
-            <div class="form-group mb-4">
-                <label for="estado">Estado:</label>
-                <select class="form-control" name="estado" id="estado">
-                    <option value="pendiente" {{ old('estado', $cotizacione->estado) == 'pendiente' ? 'selected' : '' }}>
-                        Pendiente</option>
-                    <option value="aprobada" {{ old('estado', $cotizacione->estado) == 'aprobada' ? 'selected' : '' }}>
-                        Aprobada</option>
-                    <option value="rechazada" {{ old('estado', $cotizacione->estado) == 'rechazada' ? 'selected' : '' }}>
-                        Rechazada</option>
-                    <option value="vencida" {{ old('estado', $cotizacione->estado) == 'vencida' ? 'selected' : '' }}>
-                        Vencida</option>
+            <div class="form-group">
+                <label for="estado">Estado</label>
+                <select name="estado" id="estado" class="form-control" required>
+                    <option value="pendiente" {{ $cotizacione->estado == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                    <option value="aprobada" {{ $cotizacione->estado == 'aprobada' ? 'selected' : '' }}>Aprobada</option>
+                    <option value="rechazada" {{ $cotizacione->estado == 'rechazada' ? 'selected' : '' }}>Rechazada</option>
+                    <option value="vencida" {{ $cotizacione->estado == 'vencida' ? 'selected' : '' }}>Vencida</option>
                 </select>
-                @error('estado')
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+                <label for="materiales" class="form-label">Materiales:</label>
+                <select data-size="4" multiple title="Seleccione los materiales" data-live-search="true"
+                    name="materiales[]" id="materiales" class="form-control selectpicker show-tick">
+                    @foreach ($materiales as $item)
+                        <option value="{{ $item->id }}"
+                            {{ in_array($item->id, $cotizacione->productos->materiale->pluck('id')->toArray()) ? 'selected' : '' }}>
+                            {{ $item->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('materiales')
                     <small class="text-danger">{{ '*' . $message }}</small>
                 @enderror
             </div>
 
-            <!-- Total (Solo lectura) -->
-            <div class="form-group mb-4">
-                <label for="total">Total:</label>
-                <input type="text" class="form-control" name="total" id="total" value="{{ $cotizacione->total }}"
-                    readonly>
+
+
+            <div class="form-group">
+                <label for="costo_mano_obra">Costo de Mano de Obra</label>
+                <input type="number" step="0.01" name="costo_mano_obra" id="costo_mano_obra" class="form-control"
+                    value="{{ $cotizacion->costo_mano_obra }}" required>
             </div>
 
-            <!-- Fecha de Cotización (Solo lectura) -->
-            <div class="form-group mb-4">
-                <label for="fecha_hora">Fecha de Cotización:</label>
-                <input type="text" class="form-control" name="fecha_hora" id="fecha_hora"
-                    value="{{ $cotizacione->fecha_hora }}" readonly>
+            <div class="form-group">
+                <label for="costo_material">Costo de Material</label>
+                <input type="number" step="0.01" name="costo_material" id="costo_material" class="form-control"
+                    value="{{ $cotizacion->costo_material }}" readonly>
             </div>
 
-            <!-- Botones -->
-            <div class="form-group text-center">
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <textarea name="descripcion" id="descripcion" class="form-control" rows="4">{{ $cotizacion->descripcion }}</textarea>
+            </div>
+
+            <div class="form-group text-right">
                 <button type="submit" class="btn btn-primary">Actualizar Cotización</button>
                 <a href="{{ route('cotizaciones.index') }}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
+
     </div>
 @endsection
 
