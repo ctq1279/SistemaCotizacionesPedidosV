@@ -24,7 +24,6 @@ class UpdateCotizacionRequest extends FormRequest
     public function rules()
     {
         return [
-
             'cliente_id' => 'required|exists:clientes,id',
             //'impuestos' => 'nullable',
             'impuestos' => 'nullable|numeric',
@@ -32,10 +31,9 @@ class UpdateCotizacionRequest extends FormRequest
             'fecha_hora' => 'required|date',
             //'estado' => 'required|string|max:50',
             'total' => 'required|numeric|min:0',
-
-            'costo_mano_obra' => 'nullable|numeric|min:0',
-            // Validación de arrays para la tabla `cotizaciones_productos`
-           
+            'tiempo_entrega' => 'nullable|string|max:255',
+            'lugar_entrega'=> 'nullable|string|max:255',
+            
         ];
     }
 }
