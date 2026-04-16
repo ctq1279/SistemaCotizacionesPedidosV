@@ -59,6 +59,7 @@
                         <tr>
                             <th>Nombre</th>
                             <th>Descripcion</th>
+                            <th>Cantidad</th>
                             <th>Unidad de medida</th>
                             <th>Precio</th>
                             <th>Acciones</th>
@@ -72,6 +73,9 @@
                                 </td>
                                 <td>
                                     {{ $material->descripcion }}
+                                </td>
+                                <td>
+                                    {{ $material->cantidad }}
                                 </td>
                                 <td>
                                     {{ $material->unidad_medida }}
