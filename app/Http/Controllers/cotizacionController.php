@@ -7,12 +7,15 @@ use App\Http\Requests\UpdateCotizacionRequest;
 use Illuminate\Http\Request;
 use App\Models\Cliente;
 use App\Models\Cotizacione;
+use App\Models\Materiale;
 use App\Models\Pedido;
 use App\Models\Producto;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class cotizacionController extends Controller
 {
@@ -21,6 +24,15 @@ class cotizacionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    function __construct()
+    {
+        $this->middleware('permission:ver-cotizacion|crear-cotizacion|editar-cotizacion|eliminar-cotizacion', ['only' => ['index']]);
+        $this->middleware('permission:crear-cotizacion', ['only' => ['create', 'store']]);
+        $this->middleware('permission:mostrar-cotizacion', ['only' => ['show']]);
+        $this->middleware('permission:eliminar-cotizacion', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $cotizaciones = Cotizacione::with('cliente.persona')->latest()->get();
@@ -35,8 +47,10 @@ class cotizacionController extends Controller
      */
     public function create()
     {
+        //dd('Llegamos a la función create');
         $clientes = Cliente::all();
         $productos = Producto::all();
+
         return view('cotizaciones.create', compact('clientes', 'productos'));
     }
 
@@ -51,91 +65,55 @@ class cotizacionController extends Controller
 
     public function store(StoreCotizacionRequest $request)
     {
-        //dd($request->all());
-        //dd($request->validated());
         //dd($request);
+        //dd($request->validated());
         try {
-            DB::beginTransaction(); // Iniciar una transacción para asegurar atomicidad
-            //dd("Transacción iniciada");
+            DB::beginTransaction();
+
+            // Agregar 'tiempo_entrega' y 'lugar_entrega' a los datos validados
+            $validatedData = $request->validated();
+            $validatedData['tiempo_entrega'] = $request->input('tiempo_entrega');
+            $validatedData['lugar_entrega'] = $request->input('lugar_entrega');
+
+            // Llenar tabla cotizaciones
+            $cotizacion = Cotizacione::create($validatedData);
 
             //Llenar tabla cotizaciones
-            $cotizacion = Cotizacione::create($request->validated());
-            //dd($cotizacion);
-            //Carbon::now();
+            //$cotizacion = Cotizacione::create($request->validated());
 
-            //Llenar tabla cotizaciones
+            //Llenar tabla compra_producto
             //1.Recuperar los arrays
             $arrayProducto_id = $request->get('arrayidproducto');
             $arrayCantidad = $request->get('arraycantidad');
-
-            $arrayCostoMateriales = $request->get('arraycostomateriales');
+            $arrayPrecio = $request->get('arrayprecio');
             $arrayCostoManoObra = $request->get('arraycostomanoobra');
-
-            //$arrayPrecioCotizacion = $request->get('arraypreciocotizacion', []);
-            //$arrayDescuentoPorcentaje = $request->get('arraydescuentoporcentaje', []);
-            //$arrayDescuentoMonto = $request->get('arraydescuentomonto', []);
-            //$arrayTotalCotizacion = $request->get('arraytotalcotizacion', []);
-
+            $arrayCostotTotalMateriales = $request->get('arraycostototalmateriales');
+            $arrayMargen = $request->get('arraymargen');
 
             //2.Realizar el llenado
             $siseArray = count($arrayProducto_id);
             $cont = 0;
-
             while ($cont < $siseArray) {
-                $producto = Producto::find($arrayProducto_id[$cont]);
-
-                //Verificar si el producto existe
-                if (!$producto) {
-                    return back()->with('error', 'Producto no encontrado');
-                }
-
-                //$costoManoObra = $producto->costo_mano_obra; // Obtener costo_mano_obra desde la tabla productos
-                //$costoMateriales = $arrayCostoMateriales[$cont] ?? 0.0; // Tomar de la solicitud
-                //$cantidad = $arrayCantidad[$cont];
-
-
-                $precioCotizacion = $request->get('arraypreciocotizacion')[$cont] ?? 0.0; // Obtiene el precio de la cotización
-                //$descuentoPorcentaje = $request->get('arraydescuentoporcentaje')[$cont] ?? 0.0; // Obtiene el descuento porcentual
-                //$descuentoMonto = $request->get('arraydescuentomonto')[$cont] ?? 0.0; // Obtiene el descuento en monto
-
-                //$cantidad = $arrayCantidad[$cont];
-                //$totalCotizacion = ($precioCotizacion * $cantidad) - $descuentoMonto;
-
-                // Calcular el total de cotización si no se ha proporcionado
-                //$totalCotizacion = $arrayTotalCotizacion[$cont] ?? (($precioCotizacion * $cantidad) - $descuentoMonto);
-                //$totalCotizacion = ($precioCotizacion * $cantidad) - $descuentoMonto;
-
                 $cotizacion->productos()->syncWithoutDetaching([
-
                     $arrayProducto_id[$cont] => [
                         'cantidad' => $arrayCantidad[$cont],
-                        //'costo_mano_obra' => $arrayCostoManoObra[$cont],
-                        //'costo_materiales' => $arrayCostoMateriales[$cont],
-                        // Usar el valor obtenido
-                        'costo_materiales' => $arrayCostoMateriales[$cont],
-                        //'costo_mano_obra' => $costoManoObra[$cont] ?? 0.0,
-                        //'total_cotizacion' => 0.0,
-                        'precio_cotizacion' => $precioCotizacion,
-                        //'descuento_porcentaje' => $descuentoPorcentaje,
-                        //'descuento_monto' => $descuentoMonto,
-                        //'total_cotizacion' => $totalCotizacion,
+                        'precio_cotizacion' => $arrayPrecio[$cont],
+                        'costo_produccion' => $arrayCostoManoObra[$cont],
+                        'costo_materiales' => $arrayCostotTotalMateriales[$cont],
+                        'costo_margen' => $arrayMargen[$cont]
                     ]
                 ]);
-
-                //dd($cotizacion->productos()->get());
                 $cont++;
             }
-            DB::commit(); // Confirmar la transacción si todo fue bien
-            Log::info('Transacción confirmada');
+
+            DB::commit();
         } catch (Exception $e) {
-            Log::info('Punto de control');
-            DB::rollback(); // Revertir la transacción en caso de error
-            Log::info('Punto de control');
-            Log::error('Error al guardar cotización: ' . $e->getMessage());
-            return back()->with('error', 'Error al guardar la cotización' . $e->getMessage());
+            DB::rollBack();
         }
-        return redirect()->route('cotizaciones.index')->with('success', 'cotizacion exitosa');
+
+        return redirect()->route('cotizaciones.index')->with('success', 'cotizacion exitosa exitosa');
     }
+
 
 
     /**
@@ -169,8 +147,15 @@ class cotizacionController extends Controller
     {
         $clientes = Cliente::all();
         $productos = Producto::all();
+        $materiales = Materiale::all();
 
-        return view('cotizaciones.edit', compact('cotizacione', 'clientes', 'productos'));
+        
+        //dd($cotizacione);
+        //return view('cotizaciones.edit', compact('cotizacione', 'clientes', 'productos'));
+
+        $cotizacione->load(['cliente', 'productos']); // Carga las relaciones
+        //dd($cotizacione); // Verifica que las relaciones estén presentes
+        return view('cotizaciones.edit', compact('cotizacione', 'clientes', 'productos','materiales'));
     }
 
 
@@ -188,14 +173,17 @@ class cotizacionController extends Controller
 
             // Actualizar datos generales de la cotización
             $cotizacione->update([
+                'estado' => $request->estado,
                 'cliente_id' => $request->cliente_id,
                 'impuestos' => $request->impuestos,
                 'costo_mano_obra' => $request->costo_mano_obra,
                 'fecha_hora' => $request->fecha_hora,
                 'total' => $request->total,
+                'tiempo_entrega' => $request->input('tiempo_entrega'), // Nuevo campo
+                'lugar_entrega' => $request->input('lugar_entrega'),   // Nuevo campo
             ]);
 
-            // Actualizar productos asociados
+            // Sincronizar productos asociados a la cotización
             $productosData = [];
             if ($request->has('cantidad')) {
                 foreach ($request->cantidad as $productoId => $cantidad) {
@@ -209,8 +197,35 @@ class cotizacionController extends Controller
                 }
             }
 
+            // Sincronizar productos con la cotización
             if (!empty($productosData)) {
                 $cotizacione->productos()->sync($productosData);
+            }
+
+            // Si la cotización es aprobada, crear un pedido
+            if ($request->estado === 'aprobada') {
+                $pedido = Pedido::create([
+                    'comprobante_id' => $cotizacione->comprobante_id,
+                    'cliente_id' => $cotizacione->cliente_id,
+                    'fecha_pedido' => now(),
+                    'tiempo_entrega' => $cotizacione->tiempo_entrega ?? 'No especificado',
+                    'lugar_entrega' => $cotizacione->lugar_entrega ?? 'No especificado',   // Usar lugar de entrega de la cotización
+                    'tipo_envio' => $cotizacione->tipo_envio ?? 'No especificado',
+                    'user_id' => auth()->id(),
+                    'total' => $cotizacione->total,
+                    'estado' => 'pendiente', // Estado inicial del pedido
+                ]);
+
+                // Adjuntar los productos al pedido
+                foreach ($cotizacione->productos as $producto) {
+                    $pedido->productos()->attach($producto->id, [
+                        'cantidad' => $producto->pivot->cantidad,
+                        'costo_materiales' => $producto->pivot->costo_materiales,
+                        'precio_cotizacion' => $producto->pivot->precio_cotizacion,
+                    ]);
+                }
+
+                session()->flash('success', 'Cotizacion registrada correctamente.');
             }
 
             DB::commit();
@@ -221,6 +236,8 @@ class cotizacionController extends Controller
             return redirect()->back()->withErrors(['error' => 'Error al actualizar la cotización: ' . $e->getMessage()]);
         }
     }
+
+
 
     /**
      * Función para calcular el total de la cotización.
@@ -244,5 +261,30 @@ class cotizacionController extends Controller
         $cotizacion = Cotizacione::find($id);
         $cotizacion->delete();
         return redirect()->route('cotizaciones.index')->with('success', 'Cotización eliminada');
+    }
+
+    public function generarPDF($id, $descargar = false)
+    {
+        // Recupera la cotización y los productos relacionados
+        $cotizacion = Cotizacione::with('productos', 'cliente')->findOrFail($id);
+
+        // Datos de la empresa
+        $empresa = [
+            'nombre' => 'Mod In',
+            'nit' => '3970143016',
+            'direccion' => 'Calle 6, Edif. 76, Depto. 302 Zona Los Pinos, La Paz',
+            'telefonos' => '2455927 - 64171364 - 63170340',
+        ];
+
+        // Generar el PDF con la vista
+        $pdf = Pdf::loadView('cotizaciones.pdf', compact('cotizacion', 'empresa'));
+
+        // Si es para descarga, descarga el archivo
+        if ($descargar) {
+            return $pdf->download('cotizacion-' . $id . '.pdf');
+        }
+
+        // Si es para visualizar el PDF en el navegador
+        return $pdf->stream('cotizacion-' . $id . '.pdf');
     }
 }

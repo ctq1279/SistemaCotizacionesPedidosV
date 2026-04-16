@@ -78,7 +78,7 @@
                     </div>
                 </div>
 
-                <!---Impuesto--->
+                <!---Impuesto-
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="input-group" id="hide-group">
@@ -94,7 +94,7 @@
                                 value="{{ $cotizacion->impuestos }}">
                         </div>
                     </div>
-                </div>
+                </div>-->
 
             </div>
         </div>
@@ -127,18 +127,15 @@
                                     {{ $item->pivot->cantidad }}
                                 </td>
                                 <td>
-                                    {{ $cotizacion->costo_mano_obra_origen === 'productos' ? $item->costo_mano_obra : $cotizacion->costo_mano_obra }}
+                                    {{ $item->costo_mano_obra }}
                                 </td>
                                 <td>
                                     {{ $item->pivot->costo_materiales }}
                                 </td>
                                 <td class="td-subtotal">
-                                    
-                                    {{ $item->pivot->cantidad * (
-                                        ($cotizacion->costo_mano_obra_origen === 'productos' 
-                                            ? $item->costo_mano_obra 
-                                            : $cotizacion->costo_mano_obra
-                                        ) + $item->pivot->costo_materiales) 
+                                    {{
+                                        ($item->pivot->costo_materiales + $item->costo_mano_obra) 
+            
                                     }}
                                 </td>
                             </tr>
@@ -149,13 +146,10 @@
                             <th colspan="5"></th>
                         </tr>
                         <tr>
-                            <th colspan="4">Sumas:</th>
+                            <th colspan="4">Margen ganancia:</th>
                             <th id="th-suma"></th>
                         </tr>
-                        <tr>
-                            <th colspan="4">IGV:</th>
-                            <th id="th-igv"></th>
-                        </tr>
+    
                         <tr>
                             <th colspan="4">Total:</th>
                             <th id="th-total"></th>

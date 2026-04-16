@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductoRequest extends FormRequest
 {
@@ -23,26 +24,36 @@ class UpdateProductoRequest extends FormRequest
      */
     public function rules()
     {
-        $producto= $this->route('producto');
+        $producto = $this->route('producto');
+
         return [
-            'nombre' => 'required|unique:productos,nombre,'.$producto->id.'|max:100', 
-           'descripcion' => 'nullable|max:255',
-           'precio_unitario' => 'required|unique:productos,precio_unitario,'.$producto->id.'|numeric',
-           'talla' => 'nullable|max:45',
+            'nombre' => [
+                'required',
+                'max:100',
+                Rule::unique('productos', 'nombre')->ignore($producto->id), // Condición para ignorar el ID actual
+            ],
+            'descripcion' => 'nullable|max:255',
+            'precio_unitario' => 'required|numeric',
+            'talla' => 'nullable|max:45',
             'color' => 'nullable|max:45',
             'genero' => 'nullable|max:45',
-            'costo_mano_obra' => 'nullable|numeric|unique:productos,costo_mano_obra,'.$producto->id.'|numeric',
+            'costo_mano_obra' => 'nullable|numeric',
             'img_path' => 'nullable|image|mimes:png,jpg,jpeg|max:255',
-           'categorias' => 'required|array'
-
+            'categorias' => 'required|array',
+            'materiales' => 'required|array',
+            'costo_total_materiales' => 'nullable|numeric',
+            'logos_insignias' => 'nullable|string|max:255',
+            'forro' => 'nullable|string|max:255',
+            'material_tela' => 'nullable|string|max:255',
         ];
     }
+
 
     public function attributes()
     {
         return [
             'precio_unitario' => 'precio',
-            
+
         ];
     }
 }

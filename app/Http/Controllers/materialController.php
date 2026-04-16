@@ -16,6 +16,15 @@ class materialController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    function __construct()
+    {
+        $this->middleware('permission:ver-material|crear-material|editar-material|eliminar-material', ['only' => ['index']]);
+        $this->middleware('permission:crear-material', ['only' => ['create', 'store']]);
+        $this->middleware('permission:editar-material', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:eliminar-material', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $materiales = Materiale::latest()->get();

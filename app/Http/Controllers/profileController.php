@@ -2,26 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
-class compraController extends Controller
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+class profileController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    /*function __construct()
-    {
-        $this->middleware('permission:ver-compra|crear-compra|mostrar-compra|eliminar-compra', ['only' => ['index']]);
-        $this->middleware('permission:crear-compra', ['only' => ['create', 'store']]);
-        $this->middleware('permission:mostrar-compra', ['only' => ['show']]);
-        $this->middleware('permission:eliminar-compra', ['only' => ['destroy']]);
-    }*/
-    
     public function index()
     {
-        return view('compra.index');
+        $user = User::find(Auth::user()->id);
+        return view('profile.index', compact('user'));
     }
 
     /**
@@ -31,7 +28,7 @@ class compraController extends Controller
      */
     public function create()
     {
-        return view('compra.create');
+        //
     }
 
     /**
@@ -62,10 +59,7 @@ class compraController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        //
-    }
+    public function edit($id) {}
 
     /**
      * Update the specified resource in storage.
@@ -74,9 +68,26 @@ class compraController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $profile)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|unique:users,email,' . $profile->id,
+            'password' => 'nullable'
+        ]);
+
+        /*Comprobar el password y aplicar el Hash*/
+        if (empty($request->password)) {
+            $request = Arr::except($request, array('password'));
+        } else {
+            $fieldHash = Hash::make($request->password);
+            $request->merge(['password' => $fieldHash]);
+        }
+
+        $profile->update($request->all());
+
+
+        return redirect()->route('profile.index')->with('success', 'Cambios guardados');
     }
 
     /**

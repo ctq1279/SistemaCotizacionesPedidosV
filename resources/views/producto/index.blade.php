@@ -25,7 +25,7 @@
             });
             Toast.fire({
                 icon: "success",
-                title: "Operacion exitosa"
+                title: 'message'
             });
         </script>
     @endif
@@ -46,19 +46,24 @@
 <div class="card">
     <div class="card-header">
         <i class="fas fa-table me-1"></i>
-        Tabla productos
+        Tabla prendas
     </div>
     <div class="card-body">
         <table id="datatablesSimple" class="table table-striped fs-6">
             <thead>
                 <tr>
                     <th>Nombre</th>
-                    <th>Descripcion</th>
-                    <th>Precio</th>
-                    <th>Talla</th>
-                    <th>Color</th>
+                    <th>Modelo</th>
+                    <th>Precio unitario</th>
+                    <th>Tallas</th>
+                    <th>Colores</th>
                     <th>Género</th>
+                    <th>Costo total de materiales</th>
                     <th>Costo producción</th>
+                    <th>Logos e insignias</th>
+                    <th>Forros</th>
+                    <th>Material utilizado</th>
+                    <th>Materiales</th>
                     <th>Categorias</th>
                     <th>Acciones</th>
                 </tr>
@@ -73,7 +78,7 @@
                         {{$item->descripcion}}
                     </td>
                     <td>
-                        {{$item->precio}}
+                        {{$item->precio_unitario}}
                     </td>
                     <td>
                         {{$item->talla}}
@@ -84,9 +89,31 @@
                     <td>
                         {{$item->genero}}
                     </td>
+                    <td>{{ number_format($item->costo_total_materiales, 2) }} Bs</td>
                     <td>
                         {{$item->costo_mano_obra}}
                     </td>
+                    <td>
+                        {{$item->logos_insignias}}
+                    </td>
+                    <td>
+                        {{$item->forro}}
+                    </td>
+                    <td>
+                        {{$item->material_tela}}
+                    </td>
+
+                    <td>
+                        @foreach ($item->materiale as $material)
+                        <div class="container" style="font-size: small;">
+                            <div class="row">
+                                <span class="m-1 rounded-pill p-1 bg-secondary text-white text-center">{{$material->nombre}}</span>
+                            </div>
+                        </div>
+                        @endforeach
+                       
+                    </td>
+                    
                     <td>
                         @foreach ($item->categorias as $category)
                         <div class="container" style="font-size: small;">
@@ -113,7 +140,7 @@
                     <div class="modal-dialog modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel">Detalles del producto</h1>
+                                <h1 class="modal-title fs-5" id="exampleModalLabel">Detalles de la prenda</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -125,7 +152,7 @@
                                         <p><span class="fw-bolder">Descripción: </span>{{$item->descripcion=='' ? 'No tiene' : $item->descripcion}}</p>
                                     </div>
                                     <div class="col-12">
-                                        <p><span class="fw-bolder">Precio: </span>{{$item->precio}}</p>
+                                        <p><span class="fw-bolder">Precio: </span>{{$item->precio_unitario}}</p>
                                     </div>
                                     <div class="col-12">
                                         <p><span class="fw-bolder">Talla: </span>{{$item->talla=='' ? 'No tiene' : $item->talla}}</p>
@@ -140,8 +167,16 @@
                                         <p><span class="fw-bolder">Costo mano de obra: </span>{{$item->costo_mano_obra=='' ? 'No tiene' : $item->costo_mano_obra}}</p>
                                     </div>
                                     <div class="col-12">
-                                        <p><span class="fw-bolder">Stock: </span>{{$item->stock}}</p>
+                                        <p><span class="fw-bolder">Logos e logos_insignias: </span>{{$item->logos_insignias=='' ? 'No tiene' : $item->logos_insignias}}</p>
                                     </div>
+                                    <div class="col-12">
+                                        <p><span class="fw-bolder">Forro: </span>{{$item->forro=='' ? 'No tiene' : $item->forro}}</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <p><span class="fw-bolder">Material utilizado: </span>{{$item->material_tela=='' ? 'No tiene' : $item->material_tela}}</p>
+                                    </div>
+
+                                   
                                     <div class="col-12">
                                         <p class="fw-bolder">Imagen:</p>
                                         <div>
@@ -170,7 +205,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                ¿Seguro que quieres eliminar el producto?
+                                ¿Seguro que quieres eliminar la prenda?
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>

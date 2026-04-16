@@ -24,16 +24,21 @@ class StoreProductoRequest extends FormRequest
     public function rules()
     {
         return [
-          'nombre' => 'required|unique:productos,nombre|max:100', 
-           'descripcion' => 'nullable|max:255',
-           'precio_unitario' => 'required|unique:productos|numeric',
-           'talla' => 'nullable|max:45',
+            'nombre' => 'required|max:100',
+            'descripcion' => 'nullable|max:255',
+            'precio_unitario' => 'required|numeric',
+            'talla' => 'nullable|max:45',
             'color' => 'nullable|max:45',
             'genero' => 'nullable|max:45',
-            'costo_mano_obra' => 'nullable|numeric|unique:productos',
+            'costo_mano_obra' => 'nullable|numeric',
             'img_path' => 'nullable|image|mimes:png,jpg,jpeg|max:255',
-           'categorias' => 'required|array'
-
+            'categorias' => 'required|array',
+            'materiales' => 'nullable|array', // Materiales es opcional
+            'materiales.*' => 'integer|exists:materiales,id', // Valida que los materiales existan
+            'costo_total_materiales' => 'nullable|numeric',
+            'logos_insignias' => 'nullable|string|max:255',
+            'forro' => 'nullable|string|max:255',
+            'material_tela' => 'nullable|string|max:255',
         ];
     }
 
@@ -41,7 +46,7 @@ class StoreProductoRequest extends FormRequest
     {
         return [
             'precio_unitario' => 'precio',
-            
+
         ];
     }
 }

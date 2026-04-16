@@ -14,9 +14,9 @@ class Materiale extends Model
     }
 
     public function productos(){
-        return $this->belongsToMany(Producto::class)->withTimestamps()->withPivot('cantidad');
+        return $this->belongsToMany(Producto::class,'material_producto_tabla')->withTimestamps();
     }
 
-    protected $fillable = ['nombre', 'descripcion', 'unidad_medida', 'precio'];
+    protected $fillable = ['nombre', 'descripcion', 'unidad_medida', 'precio','cantidad'];
 
 }

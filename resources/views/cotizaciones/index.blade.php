@@ -60,6 +60,8 @@
                         <tr>
                             <th>Cliente</th>
                             <th>Fecha y hora</th>
+                            <th>Tiempo de entrega</th>
+                            <th>Lugar de entrega</th>
                             <th>Total</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -83,10 +85,39 @@
                                     </div>
                                 </td>
                                 <td>
+                                    {{ $item->tiempo_entrega ?? 'No especificado' }}
+                                </td>
+                                <td>
+                                    {{ $item->lugar_entrega ?? 'No especificado' }}
+                                </td>
+
+                                <td>
                                     {{ $item->total }}
                                 </td>
                                 <td>
-                                    {{ $item->estado }}
+                                    @foreach (['pendiente', 'aprobada', 'rechazada', 'vencida'] as $estado)
+                                        <button
+                                            class="btn btn-sm {{ $item->estado == $estado ? 'btn-primary' : 'btn-secondary' }}"
+                                            onclick="cambiarEstadoManual('{{ $estado }}', {{ $item->id }})">
+                                            {{ ucfirst($estado) }}
+                                        </button>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    <!-- Botones para ver y descargar el PDF -->
+                                    <div class="btn-group" role="group" aria-label="Acciones">
+                                        <!-- Botón para ver el PDF -->
+                                        <a href="{{ route('cotizaciones.ver-pdf', ['id' => $item->id]) }}"
+                                            class="btn btn-info" target="_blank">
+                                            Ver PDF
+                                        </a>
+
+                                        <!-- Botón para descargar el PDF -->
+                                        <a href="{{ route('cotizaciones.descargar-pdf', ['id' => $item->id]) }}"
+                                            class="btn btn-primary">
+                                            Descargar PDF
+                                        </a>
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Basic mixed styles example">
@@ -102,6 +133,7 @@
                                                 Editar
                                             </button>
                                         </form>
+
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                             data-bs-target="#confirmModal-{{ $item->id }}">Eliminar</button>
 
@@ -124,7 +156,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Cerrar</button>
-                                            <form action="{{ route('cotizaciones.destroy', ['cotizacione' => $item->id]) }}"
+                                            <form
+                                                action="{{ route('cotizaciones.destroy', ['cotizacione' => $item->id]) }}"
                                                 method="post">
                                                 @method('DELETE')
                                                 @csrf
@@ -136,6 +169,7 @@
                             </div>
                         @endforeach
                     </tbody>
+
                 </table>
             </div>
         </div>
@@ -148,3 +182,31 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
     <script src="{{ asset('js/datatables-simple-demo.js') }}"></script>
 @endpush
+<script>
+    function cambiarEstadoManual(estado, cotizacionId) {
+        if (confirm("¿Estás seguro de cambiar el estado de esta cotización a " + estado + "?")) {
+            fetch('/cotizaciones/' + cotizacionId + '/estado', {
+                    method: 'POST', // Asegúrate de que el método sea POST
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        estado: estado
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Recargar la página para mostrar el estado actualizado
+                    } else {
+                        alert('Error al cambiar el estado: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    alert('Hubo un error al intentar cambiar el estado');
+                });
+        }
+    }
+</script>
